@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from "vue";
+import Message from "primevue/message";
 
 const props = defineProps({
   // Macro para definir las props
@@ -9,19 +10,18 @@ const props = defineProps({
   },
 });
 
-const isError = computed(() => {
-  return props.alerta.tipo === 'error';
+const severity = computed(() => {
+  return props.alerta.tipo === "error" ? "error" : "success";
 });
-
-// Si isError es true, se aplica la clase bg-red-500, si es false, se aplica la clase bg-green-500
-// :class="[isError ? 'bg-red-500' : 'bg-green-500']"
 </script>
 
 <template>
-  <div
-    :class="[isError ? 'bg-red-500' : 'bg-green-500']"
-    class="text-white text-center p-3 uppercase font-bold mb-3 rounded-md"
+  <Message
+    v-if="alerta.mensaje"
+    :severity="severity"
+    :closable="false"
+    class="mb-3"
   >
     {{ alerta.mensaje }}
-  </div>
+  </Message>
 </template>

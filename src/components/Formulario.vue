@@ -1,13 +1,14 @@
 <script setup>
-import { ref, reactive } from "vue";
-import Alerta from "./Alerta.vue";
+import { ref, reactive, computed } from "vue";
+import Button from "primevue/button";
+import InputText from "primevue/inputtext";
+import Textarea from "primevue/textarea";
+import Toast from "primevue/toast";
+import { useToast } from "primevue/usetoast";
 
 // const nombre = ref(''); // No utilizamos ref porque tendriamos que crear 5 ref para cada input
 
-const alerta = reactive({
-  tipo: "",
-  mensaje: "",
-});
+const toast = useToast();
 
 // Macro para definir los eventos (defineEmits es una macro para definir los eventos, lo vuelvo a variable emit para poder usarlo en el componente)
 const emit = defineEmits([
@@ -20,6 +21,10 @@ const emit = defineEmits([
 ]);
 
 const props = defineProps({
+  id: {
+    type: [String, null],
+    required: true,
+  },
   nombre: {
     type: String,
     required: true,
@@ -64,11 +69,31 @@ const validar = () => {
   // }
 
   if (Object.values(props).includes("")) {
-    alerta.mensaje = "Todos los campos son requeridos";
-    alerta.tipo = "error";
+    toast.add({
+      severity: "error",
+      summary: "Error",
+      detail: "Todos los campos son requeridos",
+      life: 3000,
+    });
     return; // Si todos los campos no están llenos, se retorna y no se envía el formulario
   }
   emit("guardar-paciente"); // Emitimos el evento guardar-paciente
+
+  if (props.id) {
+    toast.add({
+      severity: "success",
+      summary: "Éxito",
+      detail: "Paciente actualizado correctamente",
+      life: 3000,
+    });
+  } else {
+    toast.add({
+      severity: "success",
+      summary: "Éxito",
+      detail: "Paciente agregado correctamente",
+      life: 3000,
+    });
+  }
 };
 
 /* Ejemplo con JavaScript puro
@@ -86,95 +111,106 @@ formulario.addEventListener('submit', function() {
   console.log(paciente);
 });
 */
+
+const editando = computed(() => {
+  return props.id;
+});
 </script>
 
 <template>
   <div class="md:w-1/2">
-    <h2 class="font-black text-3xl text-center">
-      Seguimiento Pacientes
-      <p class="text-lg mt-5 text-center mb-10">
+    <div class="text-center mb-8">
+      <h2 class="font-black mb-2 text-black">Seguimiento Pacientes</h2>
+      <p class="text-black font-bold">
         Añade Pacientes y
-        <span class="text-indigo-600 font-bold">Administralos</span>
+        <span class="text-green-500 font-bold">Administralos</span>
       </p>
-    </h2>
+    </div>
 
-    <Alerta v-if="alerta.mensaje" :alerta="alerta" />
+    <Toast />
     <form
       class="bg-white shadow-md rounded-lg py-10 px-5 mb-10"
       @submit.prevent="validar"
     >
       <div class="mb-5">
-        <label for="mascota" class="block text-gray-700 uppercase font-bold">
+        <label for="mascota" class="block text-black uppercase font-bold mb-2">
           Nombre Mascota
         </label>
-        <input
+        <InputText
           id="mascota"
-          type="text"
           placeholder="Nombre de la mascota"
-          class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md"
-          :value="nombre"
-          @input="$emit('update:nombre', $event.target.value)"
+          class="w-full"
+          :modelValue="nombre"
+          @update:modelValue="$emit('update:nombre', $event)"
         />
       </div>
 
       <div class="mb-5">
-        <label for="mascota" class="block text-gray-700 uppercase font-bold">
+        <label
+          for="propietario"
+          class="block text-gray-700 uppercase font-bold mb-2"
+        >
           Nombre Propietario
         </label>
-        <input
+        <InputText
           id="propietario"
-          type="text"
           placeholder="Nombre del propietario"
-          class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md"
-          :value="propietario"
-          @input="$emit('update:propietario', $event.target.value)"
+          class="w-full"
+          :modelValue="propietario"
+          @update:modelValue="$emit('update:propietario', $event)"
         />
       </div>
 
       <div class="mb-5">
-        <label for="mascota" class="block text-gray-700 uppercase font-bold">
+        <label for="email" class="block text-gray-700 uppercase font-bold mb-2">
           Email
         </label>
-        <input
+        <InputText
           id="email"
           type="email"
           placeholder="Email del propietario"
-          class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md"
-          :value="email"
-          @input="$emit('update:email', $event.target.value)"
+          class="w-full"
+          :modelValue="email"
+          @update:modelValue="$emit('update:email', $event)"
         />
       </div>
 
       <div class="mb-5">
-        <label for="mascota" class="block text-gray-700 uppercase font-bold">
+        <label for="alta" class="block text-gray-700 uppercase font-bold mb-2">
           Alta
         </label>
-        <input
+        <InputText
           id="alta"
           type="date"
-          class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md"
-          :value="alta"
-          @input="$emit('update:alta', $event.target.value)"
+          class="w-full"
+          :modelValue="alta"
+          @update:modelValue="$emit('update:alta', $event)"
         />
       </div>
 
       <div class="mb-5">
-        <label for="mascota" class="block text-gray-700 uppercase font-bold">
+        <label
+          for="sintomas"
+          class="block text-gray-700 uppercase font-bold mb-2"
+        >
           Síntomas
         </label>
-        <textarea
+        <Textarea
           id="sintomas"
           placeholder="Describe los síntomas"
-          class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md h-40"
-          :value="sintomas"
-          @input="$emit('update:sintomas', $event.target.value)"
+          class="w-full"
+          rows="5"
+          :modelValue="sintomas"
+          @update:modelValue="$emit('update:sintomas', $event)"
         />
       </div>
 
-      <input
+      <Button
         type="submit"
-        class="bg-indigo-600 w-full p-3 text-white uppercase font-bold hover:bg-indigo-700 cursor-pointer transition-colors"
-        value="Registrar Paciente"
+        :label="editando ? 'Guardar cambios' : 'Registrar Paciente'"
+        class="w-full"
+        severity="info"
+        size="small"
       />
     </form>
   </div>
